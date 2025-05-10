@@ -13,12 +13,17 @@ interface CardProps {
 export default function Card({ image, isFlipped, onClick, isShuffling }: CardProps) {
   return (
     <div
-      className={`relative aspect-square w-20 sm:w-28 cursor-pointer transform transition-transform duration-300 ${
-        isFlipped ? 'rotate-y-180' : ''
-      } ${isShuffling ? 'animate-shuffle' : ''}`}
+      className={`relative aspect-square w-20 md:w-28 cursor-pointer transition-transform duration-300 ${
+        isShuffling ? 'animate-shuffle' : ''
+      }`}
       onClick={onClick}
     >
-      <div className="absolute inset-0 backface-hidden">
+      <div
+        className={`absolute inset-0 transition-transform duration-300 transform ${
+          isFlipped ? 'rotate-y-180' : ''
+        }`}
+        style={{ backfaceVisibility: 'hidden' }}
+      >
         <Image
           src="/images/back.jpg"
           alt="Card Back"
@@ -26,7 +31,12 @@ export default function Card({ image, isFlipped, onClick, isShuffling }: CardPro
           className="object-cover rounded"
         />
       </div>
-      <div className="absolute inset-0 backface-hidden rotate-y-180">
+      <div
+        className={`absolute inset-0 transition-transform duration-300 transform ${
+          isFlipped ? '' : 'rotate-y-180'
+        }`}
+        style={{ backfaceVisibility: 'hidden' }}
+      >
         <Image src={image} alt="Card Front" fill className="object-cover rounded" />
       </div>
     </div>

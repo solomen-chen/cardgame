@@ -10,14 +10,24 @@ interface CardType {
   matched: boolean;
 }
 
-// 初始卡牌數據
+// 創建初始卡牌（固定順序）
 const createCards = (): CardType[] => {
   const cards: CardType[] = [];
   for (let i = 1; i <= 8; i++) {
     cards.push({ id: `${i}-1`, image: `/images/card${i}.jpg`, matched: false });
     cards.push({ id: `${i}-2`, image: `/images/card${i}.jpg`, matched: false });
   }
-  return cards.sort(() => Math.random() - 0.5); // Fisher-Yates shuffle
+  return cards;
+};
+
+// Fisher-Yates 洗牌演算法
+const shuffleCards = (cards: CardType[]): CardType[] => {
+  const shuffled = [...cards];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 };
 
 export default function GameBoard() {
@@ -27,8 +37,9 @@ export default function GameBoard() {
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isShuffling, setIsShuffling] = useState<boolean>(true);
 
-  // 洗牌動畫
+  // 客戶端洗牌
   useEffect(() => {
+    setCards(shuffleCards(createCards()));
     const timer = setTimeout(() => setIsShuffling(false), 1000);
     return () => clearTimeout(timer);
   }, []);
@@ -72,7 +83,7 @@ export default function GameBoard() {
   };
 
   const resetGame = () => {
-    setCards(createCards());
+    setCards(shuffleCards(createCards()));
     setFlipped([]);
     setGuessCount(0);
     setIsGameOver(false);
@@ -82,10 +93,12 @@ export default function GameBoard() {
 
   return (
     <div className="text-center">
-      <h1 className="text-3xl font-bold mb-4">翻翻樂</h1>
-      <p className="mb-4">猜測次數: {guessCount}</p>
+      <h1 className="text-3xl font-bold mb-4 text-gray-800">翻翻樂</h1>
+      <p className="mb-4 text-lg font-semibold text-gray-800 bg-white p-2 rounded shadow">
+        猜測次數: {guessCount}
+      </p>
       <div
-        className="grid grid-cols-2 sm:grid-cols-4 landscape:grid-cols-8 gap-2 max-w-4xl mx-auto"
+        className="grid grid-cols-2 md:grid-cols-4 landscape:grid-cols-8 gap-2 max-w-4xl mx-auto"
       >
         {cards.map((card, index) => (
           <Card
@@ -97,17 +110,19 @@ export default function GameBoard() {
           />
         ))}
       </div>
-      {isGameOver && (
-        <div className="mt-6">
-          <p className="text-xl font-semibold mb-4">恭喜！遊戲結束！</p>
-          <button
-            onClick={resetGame}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            重新開始
-          </button>
-        </div>
-      )}
+      <div className="mt-6">
+        {isGameOver && (
+          <p className="text-xl font-semibold mb-4 text-green-600">
+            恭喜！遊戲結束！
+          </p>
+        )}
+        <button
+          onClick={resetGame}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow"
+        >
+          重新開始
+        </button>
+      </div>
     </div>
   );
 }
