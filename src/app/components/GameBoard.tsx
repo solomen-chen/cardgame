@@ -1,0 +1,113 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Card from './Card';
+
+// 定義卡牌型別
+interface CardType {
+  id: string;
+  image: string;
+  matched: boolean;
+}
+
+// 初始卡牌數據
+const createCards = (): CardType[] => {
+  const cards: CardType[] = [];
+  for (let i = 1; i <= 8; i++) {
+    cards.push({ id: `${i}-1`, image: `/images/card${i}.jpg`, matched: false });
+    cards.push({ id: `${i}-2`, image: `/images/card${i}.jpg`, matched: false });
+  }
+  return cards.sort(() => Math.random() - 0.5); // Fisher-Yates shuffle
+};
+
+export default function GameBoard() {
+  const [cards, setCards] = useState<CardType[]>(createCards());
+  const [flipped, setFlipped] = useState<number[]>([]);
+  const [guessCount, setGuessCount] = useState<number>(0);
+  const [isGameOver, setIsGameOver] = useState<boolean>(false);
+  const [isShuffling, setIsShuffling] = useState<boolean>(true);
+
+  // 洗牌動畫
+  useEffect(() => {
+    const timer = setTimeout(() => setIsShuffling(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 檢查配對
+  useEffect(() => {
+    if (flipped.length === 2) {
+      setGuessCount((prev) => prev + 1);
+      const [first, second] = flipped;
+      if (cards[first].image === cards[second].image) {
+        setCards((prev) =>
+          prev.map((card, index) =>
+            index === first || index === second ? { ...card, matched: true } : card
+          )
+        );
+        setFlipped([]);
+      } else {
+        const timer = setTimeout(() => setFlipped([]), 1000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [flipped, cards]);
+
+  // 檢查遊戲結束
+  useEffect(() => {
+    if (cards.every((card) => card.matched)) {
+      setIsGameOver(true);
+    }
+  }, [cards]);
+
+  const handleCardClick = (index: number) => {
+    if (
+      isShuffling ||
+      flipped.length >= 2 ||
+      flipped.includes(index) ||
+      cards[index].matched
+    ) {
+      return;
+    }
+    setFlipped((prev) => [...prev, index]);
+  };
+
+  const resetGame = () => {
+    setCards(createCards());
+    setFlipped([]);
+    setGuessCount(0);
+    setIsGameOver(false);
+    setIsShuffling(true);
+    setTimeout(() => setIsShuffling(false), 1000);
+  };
+
+  return (
+    <div className="text-center">
+      <h1 className="text-3xl font-bold mb-4">翻翻樂</h1>
+      <p className="mb-4">猜測次數: {guessCount}</p>
+      <div
+        className="grid grid-cols-2 sm:grid-cols-4 landscape:grid-cols-8 gap-2 max-w-4xl mx-auto"
+      >
+        {cards.map((card, index) => (
+          <Card
+            key={card.id}
+            image={card.image}
+            isFlipped={flipped.includes(index) || card.matched}
+            onClick={() => handleCardClick(index)}
+            isShuffling={isShuffling}
+          />
+        ))}
+      </div>
+      {isGameOver && (
+        <div className="mt-6">
+          <p className="text-xl font-semibold mb-4">恭喜！遊戲結束！</p>
+          <button
+            onClick={resetGame}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            重新開始
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
