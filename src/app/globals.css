@@ -36,7 +36,7 @@ body {
   transform: rotateY(180deg);
 }
 
-@keyframes shuffle {
+/* @keyframes shuffle {
   0% {
     transform: translate(0, 0);
   }
@@ -59,4 +59,4 @@ body {
 
 .animate-shuffle {
   animation: shuffle 5s ease-in-out;
-}
+} */

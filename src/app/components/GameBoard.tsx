@@ -9,6 +9,12 @@ interface CardType {
   image: string;
   matched: boolean;
 }
+// 定義隨機 transform 型別
+interface TransformType {
+  x: number;
+  y: number;
+  rotate: number;
+}
 
 // 創建初始卡牌（固定順序）
 const createCards = (): CardType[] => {
@@ -37,6 +43,18 @@ export default function GameBoard() {
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isShuffling, setIsShuffling] = useState<boolean>(true);
   const [isInitialFlipped, setIsInitialFlipped] = useState<boolean>(true);
+  // 新增隨機 transform 狀態
+  const [randomTransforms, setRandomTransforms] = useState<TransformType[]>([]);
+  // 生成隨機 transform 值
+  const generateRandomTransforms = (): TransformType[] => {
+    return Array(16)
+      .fill(0)
+      .map(() => ({
+        x: (Math.random() - 0.5) * 300, // 隨機 x 位移 (-150px 到 150px)
+        y: (Math.random() - 0.5) * 300, // 隨機 y 位移 (-150px 到 150px)
+        rotate: (Math.random() - 0.5) * 360, // 隨機旋轉 (-180deg 到 180deg)
+      }));
+  };
 
   // 初始洗牌動畫
   useEffect(() => {
@@ -46,7 +64,8 @@ export default function GameBoard() {
     const timer = setTimeout(() => {
       setIsShuffling(false);
       setIsInitialFlipped(false); // 結束後顯示背面
-    }, 5000); // 3秒動畫
+      setRandomTransforms([]); // 清空 transform
+    }, 5000); // 5秒動畫
     return () => clearTimeout(timer);
   }, []);
 
@@ -98,6 +117,7 @@ export default function GameBoard() {
     setTimeout(() => {
       setIsShuffling(false);
       setIsInitialFlipped(false); // 結束後顯示背面
+      setRandomTransforms([]); // 清空 transform
     }, 5000); // 3秒動畫
   };
 
@@ -117,6 +137,7 @@ export default function GameBoard() {
             isFlipped={isInitialFlipped || flipped.includes(index) || card.matched}
             onClick={() => handleCardClick(index)}
             isShuffling={isShuffling}
+            transform={randomTransforms[index] || { x: 0, y: 0, rotate: 0 }}
           />
         ))}
       </div>
