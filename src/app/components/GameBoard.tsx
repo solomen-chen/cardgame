@@ -36,11 +36,17 @@ export default function GameBoard() {
   const [guessCount, setGuessCount] = useState<number>(0);
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isShuffling, setIsShuffling] = useState<boolean>(true);
+  const [isInitialFlipped, setIsInitialFlipped] = useState<boolean>(true);
 
-  // 客戶端洗牌
+  // 初始洗牌動畫
   useEffect(() => {
+    console.log('Initial shuffling...');
     setCards(shuffleCards(createCards()));
-    const timer = setTimeout(() => setIsShuffling(false), 1000);
+    setIsInitialFlipped(true); // 顯示正面
+    const timer = setTimeout(() => {
+      setIsShuffling(false);
+      setIsInitialFlipped(false); // 結束後顯示背面
+    }, 5000); // 3秒動畫
     return () => clearTimeout(timer);
   }, []);
 
@@ -88,23 +94,27 @@ export default function GameBoard() {
     setGuessCount(0);
     setIsGameOver(false);
     setIsShuffling(true);
-    setTimeout(() => setIsShuffling(false), 1000);
+    setIsInitialFlipped(true); // 顯示正面
+    setTimeout(() => {
+      setIsShuffling(false);
+      setIsInitialFlipped(false); // 結束後顯示背面
+    }, 5000); // 3秒動畫
   };
 
   return (
     <div className="text-center">
       <h1 className="text-3xl font-bold mb-4 text-gray-800">翻翻樂</h1>
-      <p className="mb-4 text-lg font-semibold text-gray-800 bg-white p-2 rounded shadow">
+      <p className="mb-4 text-lg font-semibold text-gray-800 bg-white p-2 rounded shadow z-10">
         猜測次數: {guessCount}
       </p>
       <div
-        className="grid grid-cols-2 md:grid-cols-4 landscape:grid-cols-8 gap-2 max-w-4xl mx-auto"
+        className="grid grid-cols-2 lg:grid-cols-4 landscape:grid-cols-8 gap-2 max-w-4xl mx-auto"
       >
         {cards.map((card, index) => (
           <Card
             key={card.id}
             image={card.image}
-            isFlipped={flipped.includes(index) || card.matched}
+            isFlipped={isInitialFlipped || flipped.includes(index) || card.matched}
             onClick={() => handleCardClick(index)}
             isShuffling={isShuffling}
           />
@@ -118,7 +128,7 @@ export default function GameBoard() {
         )}
         <button
           onClick={resetGame}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow"
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow z-10"
         >
           重新開始
         </button>
